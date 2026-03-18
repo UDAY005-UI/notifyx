@@ -7,8 +7,9 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
+    
     "api-service": {
-        "dependsOn": ["^build"],
+        "dependsOn": ["^build", "db:generate"],
         "env": [],
         "cache": false
     },
@@ -27,6 +28,18 @@
         "env": [],
         "cache": false
     },
+        "db:generate": {
+      "cache": false
+    },
+
+    "db:migrate": {
+      "cache": false
+    },
+
+    "db:studio": {
+      "cache": false
+    },
+
     "lint": {
       "dependsOn": ["^lint"]
     },
@@ -35,7 +48,8 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": ["db:generate"]
     }
   }
 }
