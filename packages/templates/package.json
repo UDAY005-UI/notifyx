@@ -1,0 +1,8 @@
+{
+  "name": "templates",
+  "packageManager": "yarn@4.13.0",
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*"
+  }
+}
