@@ -1,0 +1,23 @@
+services:
+  postgres:
+    extends:
+      file: ./postgres.yml
+      service: postgres
+
+  redis:
+    extends:
+      file: ./redis.yml
+      service: redis
+
+  zookeeper:
+    extends:
+      file: ./kafka.yml
+      service: zookeeper
+
+  kafka:
+    extends:
+      file: ./kafka.yml
+      service: kafka
+
+volumes:
+  postgres_data:
