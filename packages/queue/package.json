@@ -1,0 +1,15 @@
+{
+  "name": "@repo/queue",
+  "packageManager": "yarn@4.13.0",
+  "dependencies": {
+    "bullmq": "^5.71.0",
+    "dotenv": "^17.3.1",
+    "ioredis": "^5.10.0",
+    "pino": "^10.3.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*"
+  }
+}
