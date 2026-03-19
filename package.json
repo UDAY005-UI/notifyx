@@ -18,12 +18,24 @@
     "dev:api": "turbo run dev --filter=api-service",
     "dev:workers": "turbo run dev --filter=worker-*",
     "dev:web": "turbo run dev --filter=web",
-    "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
     "build:apps": "turbo run build --filter=apps/*",
-    "build:packages": "turbo run build --filter=packages/*"
+    "build:packages": "turbo run build --filter=packages/*",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.7.4",
     "turbo": "^2.8.17",
     "typescript": "5.9.2"
