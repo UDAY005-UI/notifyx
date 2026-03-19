@@ -7,18 +7,151 @@ datasource db {
   provider = "postgresql"
 }
 
-model User { 
-  id    Int     @id @default(autoincrement()) 
-  email String  @unique
-  name  String?
-  posts Post[]
-} 
+//
+// ENUMS
+//
 
-model Post { 
-  id        Int     @id @default(autoincrement()) 
-  title     String
-  content   String?
-  published Boolean @default(false) 
-  author    User    @relation(fields: [authorId], references: [id]) 
-  authorId  Int
-} 
+enum NotificationType {
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum NotificationStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  RETRYING
+}
+
+//
+// USER
+//
+
+model User {
+  id            String         @id @default(cuid())
+  clerkId       String
+  name          String
+  email         String         @unique
+  createdAt     DateTime       @default(now())
+
+  apiKeys       ApiKey[]
+  templates     Template[]
+  notifications Notification[]
+}
+
+//
+// API KEY
+//
+
+model ApiKey {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name       String
+  keyHash    String
+  revoked    Boolean  @default(false)
+
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+//
+// TEMPLATE (User-defined)
+//
+
+model Template {
+  id          String            @id @default(cuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  type        NotificationType
+
+  subject     String?           // only for email
+  body        String
+
+  version     Int               @default(1)
+
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  notifications Notification[]
+
+  @@index([userId])
+  @@unique([userId, name]) // user can't have duplicate template names
+}
+
+//
+// NOTIFICATION (Core entity)
+//
+
+model Notification {
+  id               String             @id @default(cuid())
+  userId           String
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type             NotificationType
+
+  templateId       String?
+  template         Template?          @relation(fields: [templateId], references: [id])
+
+  templateVersion  Int?
+  templateData     Json?              // variables
+
+  // Rendered snapshot (IMPORTANT)
+  subject          String?
+  body             String?
+
+  status           NotificationStatus @default(QUEUED)
+
+  totalCount       Int                @default(0)
+  successCount     Int                @default(0)
+  failureCount     Int                @default(0)
+
+  deliveries       Delivery[]
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+//
+// DELIVERY (Execution layer)
+//
+
+model Delivery {
+  id               String          @id @default(cuid())
+
+  notificationId   String
+  notification     Notification    @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  channel          NotificationType
+  recipient        String          // email / phone / device token
+
+  status           DeliveryStatus  @default(PENDING)
+
+  provider         String?         // SES, Twilio, etc.
+  attempts         Int             @default(0)
+
+  lastError        String?
+
+  sentAt           DateTime?
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([notificationId])
+  @@index([status])
+}
